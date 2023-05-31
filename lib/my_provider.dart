@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tic_tac_toe/game_Logic.dart';
+import 'package:tic_tac_toe/main.dart';
+
+late SharedPreferences preferences;
 
 enum ActivePlayer {
   x,
@@ -19,6 +23,7 @@ class MyProvider with ChangeNotifier {
   String? _result;
   bool _twoPlayer = false;
   Levels? _levels;
+  bool _current = false;
   set setLevel(Levels level) {
     _levels = level;
     notifyListeners();
@@ -28,6 +33,12 @@ class MyProvider with ChangeNotifier {
 
   set setPlayer(ActivePlayer activePlayer) {
     _activePlayer = activePlayer;
+    notifyListeners();
+  }
+
+  set setCurrent(bool value) {
+    _current = value;
+    preferences.setBool('theme', value);
     notifyListeners();
   }
 
@@ -59,7 +70,7 @@ class MyProvider with ChangeNotifier {
 
   get result => _result;
   get twoPlayer => _twoPlayer;
-
+  get current => preferences.getBool('theme') ?? false;
   void reset() {
     _activePlayer = ActivePlayer.x;
     _gameOver = false;
@@ -73,4 +84,9 @@ class MyProvider with ChangeNotifier {
 
     notifyListeners();
   }
+}
+
+Future setData() async {
+  preferences = await SharedPreferences.getInstance();
+  return preferences;
 }

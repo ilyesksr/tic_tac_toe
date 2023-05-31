@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tic_tac_toe/widget/numberOfPlayers.dart';
-
+import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import '../my_provider.dart';
 import '../widget/player_button.dart';
 import '../widget/restartbutton.dart';
@@ -9,14 +9,15 @@ import '../widget/restartbutton.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   late MyProvider watch;
-
+  TextStyle switchTextStyle =
+      TextStyle(fontSize: 25, fontWeight: FontWeight.bold);
   late MyProvider read;
-
+  late List<Widget> myItems;
   late String player;
 
   @override
@@ -35,40 +36,49 @@ class _HomePageState extends State<HomePage> {
     watch = context.watch<MyProvider>();
     read = context.read<MyProvider>();
     player = watch.activePlayer == ActivePlayer.x ? 'X' : 'O';
+    myItems = List.generate(
+        9,
+        (index) => button(
+              activePlayer: watch.activePlayer,
+              index: index,
+              gameOver: watch.gameOver,
+            ));
 
-    return Scaffold(
-      body: Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-          child: MediaQuery.of(context).orientation != Orientation.landscape
-              ? Column(children: [
-                  const SizedBox(
-                    height: 40,
-                  ),
-                  firstPart(),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  x_oPart(),
-                  const SizedBox(
-                    height: 100,
-                  ),
-                  finalPart(),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                ])
-              : Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [firstPart(), finalPart()],
-                      ),
+    return SafeArea(
+      child: Scaffold(
+        body: Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+            child: MediaQuery.of(context).orientation != Orientation.landscape
+                ? Column(children: [
+                    const SizedBox(
+                      height: 10,
                     ),
-                    x_oPart()
-                  ],
-                )),
+                    firstPart(),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    x_oPart(),
+                    const SizedBox(
+                      height: 100,
+                    ),
+                    finalPart(),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                  ])
+                : Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [firstPart(), finalPart()],
+                        ),
+                      ),
+                      x_oPart()
+                    ],
+                  )),
+      ),
     );
   }
 
@@ -94,13 +104,7 @@ class _HomePageState extends State<HomePage> {
             childAspectRatio: 1,
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
-            children: List.generate(
-                9,
-                (index) => button(
-                      activePlayer: watch.activePlayer,
-                      index: index,
-                      gameOver: watch.gameOver,
-                    )),
+            children: myItems,
           ),
           /* watch.gameOver
                     ? CustomPaint(
@@ -117,13 +121,49 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Text firstPart() {
-    return Text(
-        !watch.gameOver
-            ? "It's $player turn"
-            : watch.result != 'X' && watch.result != 'O'
-                ? "it's a ${watch.result}"
-                : '${watch.result ?? ""} is the Winner',
-        style: const TextStyle(fontSize: 35, fontWeight: FontWeight.bold));
+  Widget firstPart() {
+    return Column(
+      children: [
+        AnimatedToggleSwitch.dual(
+          current: watch.current,
+          first: false,
+          second: true,
+          colorBuilder: (value) => value ? null : Theme.of(context).splashColor,
+          borderColor: Theme.of(context).splashColor.withOpacity(.7),
+          indicatorSize: Size(40, 40),
+          textBuilder: (value) => value
+              ? Center(
+                  child: FittedBox(
+                    child: Text(
+                      'Light',
+                      style: switchTextStyle,
+                    ),
+                  ),
+                )
+              : Center(
+                  child: FittedBox(
+                    child: Text(
+                      'Dark',
+                      style: switchTextStyle,
+                    ),
+                  ),
+                ),
+          onChanged: (value) {
+            setState(() {
+              read.setCurrent = value;
+            });
+          },
+          borderWidth: 2.5,
+          iconBuilder: (value) => Icon(value ? Icons.sunny : Icons.nightlight),
+        ),
+        Text(
+            !watch.gameOver
+                ? "It's $player turn"
+                : watch.result != 'X' && watch.result != 'O'
+                    ? "it's a ${watch.result}"
+                    : '${watch.result ?? ""} is the Winner',
+            style: const TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
+      ],
+    );
   }
 }

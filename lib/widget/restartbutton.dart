@@ -24,7 +24,9 @@ class restartB extends StatelessWidget {
       ),
       style: ButtonStyle(
           backgroundColor:
-              MaterialStatePropertyAll(Theme.of(context).splashColor)),
+              MaterialStatePropertyAll(Theme.of(context).splashColor),
+          shape: MaterialStatePropertyAll(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)))),
     );
   }
 }
